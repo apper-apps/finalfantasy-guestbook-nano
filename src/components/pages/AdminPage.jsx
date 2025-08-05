@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
-import { Button } from "@/components/atoms/Button";
+import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 import { useUser } from "@/components/organisms/Layout";
 import messageService from "@/services/api/messageService";
