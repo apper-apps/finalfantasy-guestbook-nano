@@ -62,25 +62,25 @@ const handleSubmit = async (e) => {
   };
 
 return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
+    <Card className="max-w-2xl mx-auto px-4 md:px-0">
+      <CardHeader className="px-4 sm:px-6">
         <h2 className="text-xl font-bold text-gray-100">새 메시지</h2>
         <p className="text-sm text-gray-400">
           Final Fantasy에 대한 생각이나 인사말을 남겨보세요.
         </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+</CardHeader>
+      <CardContent className="px-4 sm:px-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="authorName" className="block text-sm font-medium text-gray-300">
               작성자 이름
             </label>
-            <Input
+<Input
               id="authorName"
               placeholder="이름을 입력하세요..."
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              className={errors.authorName ? "border-red-500" : ""}
+              className={`min-h-[44px] touch-manipulation ${errors.authorName ? "border-red-500" : ""}`}
             />
             {errors.authorName && (
               <p className="text-sm text-red-400">{errors.authorName}</p>
@@ -91,12 +91,12 @@ return (
             <label htmlFor="message" className="block text-sm font-medium text-gray-300">
               메시지
             </label>
-            <Textarea
+<Textarea
               id="message"
               placeholder="메시지를 입력하세요..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className={`min-h-[120px] resize-none ${errors.content ? "border-red-500" : ""}`}
+              className={`min-h-[120px] md:min-h-[150px] resize-none touch-manipulation ${errors.content ? "border-red-500" : ""}`}
               maxLength={280}
             />
             {errors.content && (
@@ -107,19 +107,20 @@ return (
             </div>
           </div>
           
-          <div className="flex justify-end space-x-3">
+<div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">
             <Button
               type="button"
               variant="secondary"
               onClick={() => navigate("/home")}
               disabled={isSubmitting}
+              className="min-h-[44px] px-6 text-base sm:text-sm order-2 sm:order-1"
             >
               취소
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || !content.trim() || !authorName.trim()}
-              className="min-w-[80px]"
+              className="min-w-[80px] min-h-[44px] px-6 text-base sm:text-sm order-1 sm:order-2"
             >
               {isSubmitting ? "등록 중..." : "등록"}
             </Button>

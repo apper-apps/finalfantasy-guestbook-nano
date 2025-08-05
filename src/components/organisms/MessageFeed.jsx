@@ -31,8 +31,8 @@ const MessageFeed = () => {
   if (error) return <Error message={error} onRetry={loadMessages} />;
   if (messages.length === 0) return <Empty />;
 
-  return (
-    <div className="space-y-4">
+return (
+    <div className="space-y-4 md:space-y-6 px-4 md:px-0">
       {messages.map((message, index) => (
         <MessageCard key={message.Id} message={message} index={index} />
       ))}

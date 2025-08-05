@@ -37,7 +37,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+<nav className="hidden md:flex items-center space-x-1">
             {navigationItems.map((item) => (
               <NavigationItem key={item.to} to={item.to} icon={item.icon}>
                 {item.label}
@@ -46,35 +46,71 @@ const Header = () => {
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <MobileMenuToggle
-            isOpen={isMobileMenuOpen}
-            onClick={toggleMobileMenu}
-          />
+<div className="md:hidden">
+            <MobileMenuToggle
+              isOpen={isMobileMenuOpen}
+              onClick={toggleMobileMenu}
+            />
+          </div>
         </div>
 
         {/* Mobile Navigation */}
+{/* Mobile Drawer Navigation */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.nav
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden py-4 border-t border-gray-700"
-            >
-              <div className="flex flex-col space-y-2">
-                {navigationItems.map((item) => (
-                  <NavigationItem
-                    key={item.to}
-                    to={item.to}
-                    icon={item.icon}
-                    onClick={closeMobileMenu}
-                  >
-                    {item.label}
-                  </NavigationItem>
-                ))}
-              </div>
-            </motion.nav>
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                onClick={closeMobileMenu}
+              />
+              
+              {/* Drawer */}
+              <motion.nav
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="fixed top-0 left-0 h-full w-80 max-w-[85vw] glass-effect border-r border-gray-700 z-50 md:hidden"
+              >
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                    <div className="flex items-center space-x-2">
+                      <ApperIcon name="Gamepad2" size={24} />
+                      <span className="text-lg font-bold gradient-text">Menu</span>
+                    </div>
+                    <button
+                      onClick={closeMobileMenu}
+                      className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <ApperIcon name="X" size={20} />
+                    </button>
+                  </div>
+                  
+                  {/* Navigation Items */}
+                  <div className="flex-1 px-6 py-4">
+                    <div className="space-y-2">
+                      {navigationItems.map((item) => (
+                        <NavigationItem
+                          key={item.to}
+                          to={item.to}
+                          icon={item.icon}
+                          onClick={closeMobileMenu}
+                          className="w-full justify-start px-4 py-3 text-base"
+                        >
+                          {item.label}
+                        </NavigationItem>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.nav>
+            </>
           )}
         </AnimatePresence>
       </div>
