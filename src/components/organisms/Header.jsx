@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import NavigationItem from "@/components/molecules/NavigationItem";
 import MobileMenuToggle from "@/components/molecules/MobileMenuToggle";
 import ApperIcon from "@/components/ApperIcon";
+import { useUser } from "@/components/organisms/Layout";
 
 const Header = () => {
+  const { currentUser } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -19,8 +21,8 @@ const Header = () => {
   const navigationItems = [
     { to: "/home", icon: "Home", label: "홈" },
     { to: "/post", icon: "PenTool", label: "글쓰기" },
+    ...(currentUser?.is_admin ? [{ to: "/admin", icon: "Settings", label: "관리자" }] : []),
   ];
-
   return (
     <header className="sticky top-0 z-50 glass-effect border-b border-gray-700">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -3,16 +3,17 @@ import { ToastContainer } from "react-toastify";
 import Layout from "@/components/organisms/Layout";
 import HomePage from "@/components/pages/HomePage";
 import WritePage from "@/components/pages/WritePage";
-
+import AdminPage from "@/components/pages/AdminPage";
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background font-pretendard">
         <Layout>
-          <Routes>
+<Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/post" element={<WritePage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Layout>
         

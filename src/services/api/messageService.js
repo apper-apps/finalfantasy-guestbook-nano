@@ -22,7 +22,6 @@ const messageService = {
     
     return { ...message };
   },
-
 async create(messageData) {
     await new Promise(resolve => setTimeout(resolve, 400));
     
@@ -41,6 +40,30 @@ async create(messageData) {
     
     messages.unshift(newMessage); // Add to beginning to show newest first
     return { ...newMessage };
+  },
+
+  async toggleLike(id, userId) {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    const messageIndex = messages.findIndex(msg => msg.Id === parseInt(id));
+    if (messageIndex === -1) {
+      throw new Error("Message not found");
+    }
+    
+    const message = messages[messageIndex];
+    const likes = message.likes || [];
+    const userLikeIndex = likes.indexOf(userId);
+    
+    if (userLikeIndex > -1) {
+      // Remove like
+      likes.splice(userLikeIndex, 1);
+    } else {
+      // Add like
+      likes.push(userId);
+    }
+    
+    messages[messageIndex] = { ...message, likes };
+    return { ...messages[messageIndex] };
   },
 
   async update(id, updateData) {

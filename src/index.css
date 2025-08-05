@@ -56,8 +56,19 @@ body {
     background: rgba(31, 41, 55, 0.8);
   }
 
-  .gradient-text {
+.gradient-text {
     background: linear-gradient(135deg, #60A5FA, #818CF8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .admin-gradient {
+    background: linear-gradient(135deg, #EF4444, #F97316);
+  }
+
+  .admin-text {
+    background: linear-gradient(135deg, #EF4444, #F97316);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

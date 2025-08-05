@@ -4,11 +4,12 @@ import { cn } from "@/utils/cn";
 const Button = forwardRef(({ className, variant = "primary", size = "default", children, ...props }, ref) => {
   const baseClasses = "inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
   
-  const variants = {
+const variants = {
     primary: "bg-gradient-to-r from-primary to-secondary text-white hover:brightness-110 shadow-lg shadow-primary/25",
     secondary: "bg-surface text-gray-100 hover:bg-gray-700 border border-gray-600",
     ghost: "text-gray-300 hover:bg-surface hover:text-white",
     outline: "border border-primary text-primary hover:bg-primary hover:text-white",
+    danger: "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg shadow-red-500/25",
   };
   
   const sizes = {
