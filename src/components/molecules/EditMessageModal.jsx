@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
-import { Button } from "@/components/atoms/Button";
+import Button from "@/components/atoms/Button";
 import { Textarea } from "@/components/atoms/Textarea";
 import { Input } from "@/components/atoms/Input";
 import ApperIcon from "@/components/ApperIcon";
