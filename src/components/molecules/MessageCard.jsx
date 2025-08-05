@@ -16,9 +16,20 @@ const MessageCard = ({ message, index = 0 }) => {
   };
 
   // Format relative time in Korean
-  const getRelativeTime = (timestamp) => {
+const getRelativeTime = (timestamp) => {
+    // Validate timestamp input
+    if (!timestamp || timestamp === null || timestamp === undefined) {
+      return "시간 정보 없음";
+    }
+
     const now = new Date();
     const messageTime = new Date(timestamp);
+    
+    // Check if the created date is valid
+    if (isNaN(messageTime.getTime())) {
+      return "시간 정보 없음";
+    }
+    
     const diffInMinutes = Math.floor((now - messageTime) / (1000 * 60));
     
     if (diffInMinutes < 1) return "방금 전";
@@ -30,10 +41,16 @@ const MessageCard = ({ message, index = 0 }) => {
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}일 전`;
     
-    return formatDistanceToNow(messageTime, {
-      addSuffix: true,
-      locale: ko,
-    });
+    // Safely call formatDistanceToNow with error handling
+    try {
+      return formatDistanceToNow(messageTime, {
+        addSuffix: true,
+        locale: ko,
+      });
+    } catch (error) {
+      console.warn('Date formatting error:', error);
+      return "시간 정보 오류";
+    }
   };
 
   const authorName = message.author || "익명";
