@@ -83,12 +83,12 @@ const handleEdit = (message) => {
     setDeletingMessage(message);
   };
 
-  const handleDeleteConfirm = async () => {
+const handleDeleteConfirm = async () => {
     try {
       await messageService.delete(deletingMessage.Id);
       await loadMessages();
       setDeletingMessage(null);
-      toast.success("메시지가 삭제되었습니다");
+      toast.success("삭제되었습니다");
     } catch (err) {
       toast.error("메시지 삭제에 실패했습니다");
     }

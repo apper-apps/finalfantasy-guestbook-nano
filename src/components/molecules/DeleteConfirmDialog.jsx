@@ -13,11 +13,10 @@ const DeleteConfirmDialog = ({ message, onConfirm, onCancel }) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+<div className="space-y-4">
             <p className="text-gray-300">
-              정말로 이 메시지를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+              정말 삭제하시겠습니까?
             </p>
-            
             <div className="bg-surface p-3 rounded-lg border border-red-500/30">
               <p className="text-sm text-gray-400 mb-1">
                 작성자: <span className="text-gray-300">{message.author_name}</span>
