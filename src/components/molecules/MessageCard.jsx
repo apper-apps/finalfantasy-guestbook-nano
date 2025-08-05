@@ -4,29 +4,74 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 
 const MessageCard = ({ message, index = 0 }) => {
+  // Generate initials from author name
+  const getInitials = (name) => {
+    if (!name || name === "익명") return "익";
+    return name
+      .split(" ")
+      .map(word => word.charAt(0))
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
+  // Format relative time in Korean
+  const getRelativeTime = (timestamp) => {
+    const now = new Date();
+    const messageTime = new Date(timestamp);
+    const diffInMinutes = Math.floor((now - messageTime) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "방금 전";
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}일 전`;
+    
+    return formatDistanceToNow(messageTime, {
+      addSuffix: true,
+      locale: ko,
+    });
+  };
+
+  const authorName = message.author || "익명";
+  const initials = getInitials(authorName);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="p-4 hover:bg-surface/80 transition-colors duration-200">
+      <Card className="p-5 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:-translate-y-1 transition-all duration-300 border border-gray-700/50 hover:border-gray-600/50">
         <CardContent className="p-0">
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-300">
-                {message.author || "익명"}
-              </span>
-              <span className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(message.timestamp), {
-                  addSuffix: true,
-                  locale: ko,
-                })}
-              </span>
+          <div className="flex items-start space-x-4">
+            {/* Circular Avatar */}
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
+                <span className="text-sm font-semibold text-white">
+                  {initials}
+                </span>
+              </div>
             </div>
-            <p className="text-gray-100 leading-6 whitespace-pre-wrap">
-              {message.content}
-            </p>
+            
+            {/* Message Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-gray-200 truncate">
+                  {authorName}
+                </h4>
+                <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                  {getRelativeTime(message.timestamp)}
+                </span>
+              </div>
+              
+              <p className="text-gray-100 leading-relaxed whitespace-pre-wrap text-sm break-words">
+                {message.content}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
