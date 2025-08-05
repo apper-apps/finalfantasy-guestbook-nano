@@ -176,24 +176,28 @@ const handleDelete = (message) => {
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+{/* Statistics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 border-red-500/30">
           <div className="flex items-center space-x-3">
             <ApperIcon name="MessageSquare" size={24} className="text-red-400" />
             <div>
-              <p className="text-sm text-gray-400">전체 메시지</p>
+              <p className="text-sm text-gray-400">Total Messages</p>
               <p className="text-xl font-bold admin-text">{messages.length}</p>
             </div>
           </div>
         </Card>
         <Card className="p-4 border-red-500/30">
           <div className="flex items-center space-x-3">
-            <ApperIcon name="Heart" size={24} className="text-red-400" />
+            <ApperIcon name="Calendar" size={24} className="text-red-400" />
             <div>
-              <p className="text-sm text-gray-400">총 좋아요</p>
+              <p className="text-sm text-gray-400">Messages Today</p>
               <p className="text-xl font-bold admin-text">
-                {messages.reduce((total, msg) => total + (msg.likes?.length || 0), 0)}
+                {(() => {
+                  const today = new Date();
+                  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                  return messages.filter(msg => new Date(msg.created_at) >= todayStart).length;
+                })()}
               </p>
             </div>
           </div>
@@ -202,9 +206,36 @@ const handleDelete = (message) => {
           <div className="flex items-center space-x-3">
             <ApperIcon name="Users" size={24} className="text-red-400" />
             <div>
-              <p className="text-sm text-gray-400">작성자 수</p>
+              <p className="text-sm text-gray-400">Top 3 Authors</p>
+              <div className="text-sm admin-text">
+                {(() => {
+                  const authorCounts = messages.reduce((acc, msg) => {
+                    acc[msg.author_name] = (acc[msg.author_name] || 0) + 1;
+                    return acc;
+                  }, {});
+                  const sortedAuthors = Object.entries(authorCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3);
+                  return sortedAuthors.length > 0 
+                    ? sortedAuthors.map(([name, count]) => `${name} (${count})`).join(', ')
+                    : 'No data';
+                })()}
+              </div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 border-red-500/30">
+          <div className="flex items-center space-x-3">
+            <ApperIcon name="BarChart3" size={24} className="text-red-400" />
+            <div>
+              <p className="text-sm text-gray-400">Avg Message Length</p>
               <p className="text-xl font-bold admin-text">
-                {new Set(messages.map(msg => msg.author_name)).size}
+                {(() => {
+                  if (messages.length === 0) return 0;
+                  const totalChars = messages.reduce((sum, msg) => sum + (msg.text?.length || 0), 0);
+                  return Math.round(totalChars / messages.length);
+                })()}
+                <span className="text-sm text-gray-400 ml-1">chars</span>
               </p>
             </div>
           </div>
