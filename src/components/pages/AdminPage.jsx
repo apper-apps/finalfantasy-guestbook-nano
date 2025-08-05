@@ -30,17 +30,8 @@ const [messages, setMessages] = useState([]);
   }, [currentUser?.is_admin]);
 
   // Render access denied for non-admin users
-  if (!currentUser?.is_admin) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="p-8 text-center">
-          <ApperIcon name="Lock" size={48} className="mx-auto mb-4 text-red-400" />
-          <h2 className="text-xl font-bold text-red-400 mb-2">접근 권한이 없습니다</h2>
-          <p className="text-gray-400">관리자만 접근할 수 있는 페이지입니다.</p>
-        </Card>
-      </div>
-    );
-  }
+// Admin access is now handled by AdminRoute wrapper in App.jsx
+  // This component only renders for admin users
 
   const loadMessages = async () => {
     try {

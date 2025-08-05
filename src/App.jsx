@@ -1,24 +1,25 @@
-import { createContext, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import { Provider, useDispatch } from 'react-redux';
-import { store } from '@/store/store';
-import { setUser, clearUser } from '@/store/userSlice';
-import profileService from '@/services/api/profileService';
+import React, { createContext, useEffect, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import "@/index.css";
+import profileService from "@/services/api/profileService";
 import Layout from "@/components/organisms/Layout";
-import HomePage from "@/components/pages/HomePage";
+import Loading from "@/components/ui/Loading";
 import WritePage from "@/components/pages/WritePage";
-import AdminPage from "@/components/pages/AdminPage";
+import HomePage from "@/components/pages/HomePage";
 import Login from "@/components/pages/Login";
-import Signup from "@/components/pages/Signup";
+import PromptPassword from "@/components/pages/PromptPassword";
+import ResetPassword from "@/components/pages/ResetPassword";
+import AdminPage from "@/components/pages/AdminPage";
 import Callback from "@/components/pages/Callback";
 import ErrorPage from "@/components/pages/ErrorPage";
-import ResetPassword from "@/components/pages/ResetPassword";
-import PromptPassword from "@/components/pages/PromptPassword";
+import Signup from "@/components/pages/Signup";
+import { clearUser, setUser } from "@/store/userSlice";
+import { store } from "@/store/store";
 
 // Create auth context
 export const AuthContext = createContext(null);
-
 function AppContent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ function AppContent() {
     });
     
     // Initialize but don't show login yet
-ApperUI.setup(client, {
+    ApperUI.setup(client, {
       target: '#authentication',
       clientId: import.meta.env.VITE_APPER_PROJECT_ID,
       view: 'both',
@@ -109,7 +110,7 @@ ApperUI.setup(client, {
               navigate(currentPath);
             }
           } else if (isAuthPage) {
-            navigate(currentPath);
+navigate(currentPath);
           } else {
             navigate('/login');
           }
@@ -122,6 +123,21 @@ ApperUI.setup(client, {
     });
   }, []);
   
+  // Admin access control
+  const checkAdminAccess = async (user) => {
+    if (!user) return false;
+    
+    try {
+      let profile = user.profile;
+      if (!profile && user.userId) {
+        profile = await profileService.getByUserId(user.userId);
+      }
+      return profile?.role === 'admin';
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      return false;
+    }
+  };
   // Authentication methods to share via context
   const authMethods = {
     isInitialized,
@@ -133,10 +149,40 @@ ApperUI.setup(client, {
         navigate('/login');
       } catch (error) {
         console.error("Logout failed:", error);
-      }
+}
     }
   };
   
+  // Admin route guard
+  const AdminRoute = ({ children }) => {
+    const { user, isAuthenticated } = useSelector((state) => state.user);
+    const [isAdmin, setIsAdmin] = useState(null);
+    
+    useEffect(() => {
+      const verifyAdmin = async () => {
+        if (!isAuthenticated || !user) {
+          setIsAdmin(false);
+          return;
+        }
+        
+        const adminStatus = await checkAdminAccess(user);
+        setIsAdmin(adminStatus);
+        
+        if (!adminStatus) {
+          toast.error("관리자 권한이 필요합니다");
+          navigate('/home');
+        }
+      };
+      
+      verifyAdmin();
+    }, [isAuthenticated, user]);
+    
+    if (isAdmin === null) {
+      return <div className="loading flex items-center justify-center p-6 h-full w-full">Loading...</div>;
+    }
+    
+    return isAdmin ? children : null;
+  };
   // Don't render routes until initialization is complete
   if (!isInitialized) {
     return <div className="loading flex items-center justify-center p-6 h-full w-full"><svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"></path><path d="m16.2 7.8 2.9-2.9"></path><path d="M18 12h4"></path><path d="m16.2 16.2 2.9 2.9"></path><path d="M12 18v4"></path><path d="m4.9 19.1 2.9-2.9"></path><path d="M2 12h4"></path><path d="m4.9 4.9 2.9 2.9"></path></svg></div>;
@@ -153,9 +199,9 @@ ApperUI.setup(client, {
           <Route path="/prompt-password/:appId/:emailAddress/:provider" element={<PromptPassword />} />
           <Route path="/reset-password/:appId/:fields" element={<ResetPassword />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<Layout><HomePage /></Layout>} />
+<Route path="/home" element={<Layout><HomePage /></Layout>} />
           <Route path="/post" element={<Layout><WritePage /></Layout>} />
-          <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
+          <Route path="/admin" element={<AdminRoute><Layout><AdminPage /></Layout></AdminRoute>} />
         </Routes>
         
         <ToastContainer
@@ -172,7 +218,7 @@ ApperUI.setup(client, {
           className="z-50"
         />
       </div>
-    </AuthContext.Provider>
+</AuthContext.Provider>
   );
 }
 
