@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
-import { Button } from "@/components/atoms/Button";
+import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 
 const DeleteConfirmDialog = ({ message, onConfirm, onCancel }) => {
