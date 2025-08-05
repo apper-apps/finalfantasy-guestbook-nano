@@ -24,10 +24,17 @@ export const userSlice = createSlice({
       state.isAuthenticated = false;
       state.profile = null;
     },
+updateProfile: (state, action) => {
+      // Allow updating profile data separately
+      state.profile = JSON.parse(JSON.stringify(action.payload));
+      if (state.user) {
+        state.user.profile = state.profile;
+      }
+    },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, updateProfile } = userSlice.actions;
 export default userSlice.reducer;
 
 const initialState = {
