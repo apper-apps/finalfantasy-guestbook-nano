@@ -22,10 +22,12 @@ const MessageCard = ({ message, index = 0 }) => {
     return sessionId;
   };
   
-  // Initialize like state based on current user's like status
+// Initialize like state based on current user's like status
   React.useEffect(() => {
     const sessionId = getSessionId();
-    const likes = message.likes || [];
+    // Handle likes as either array or comma-separated string
+    const likes = Array.isArray(message.likes) ? message.likes : 
+                  (message.likes ? message.likes.split(',').filter(l => l.trim()) : []);
     setIsLiked(likes.includes(sessionId));
     setLikeCount(likes.length);
   }, [message.likes]);
@@ -37,8 +39,9 @@ const MessageCard = ({ message, index = 0 }) => {
     setIsLoading(true);
     const sessionId = getSessionId();
     
-    try {
+try {
       const updatedMessage = await messageService.toggleLike(message.Id, sessionId);
+      // Handle response likes as array (from toggleLike method)
       const newLikes = updatedMessage.likes || [];
       const newIsLiked = newLikes.includes(sessionId);
       
@@ -109,7 +112,7 @@ const getRelativeTime = (timestamp) => {
     }
   };
 
-  const authorName = message.author || "익명";
+const authorName = message.author_name || message.author || "익명";
   const initials = getInitials(authorName);
 
   return (
@@ -137,7 +140,7 @@ const getRelativeTime = (timestamp) => {
                   {authorName}
                 </h4>
                 <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
-                  {getRelativeTime(message.timestamp)}
+{getRelativeTime(message.created_at || message.timestamp)}
                 </span>
               </div>
               

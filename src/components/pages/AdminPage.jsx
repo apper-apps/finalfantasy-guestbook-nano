@@ -59,8 +59,8 @@ const [messages, setMessages] = useState([]);
 const handleEdit = (message) => {
     setEditingRowId(message.Id);
     setEditData({
-      text: message.text,
-      author_name: message.author_name
+      text: message.text || message.content,
+      author_name: message.author_name || message.author
     });
   };
 
@@ -140,10 +140,10 @@ setSelectAll(false);
         headers.join(','),
         ...messages.map(message => [
           message.Id,
-          `"${message.text.replace(/"/g, '""')}"`, // Escape quotes in text
-          `"${message.author.replace(/"/g, '""')}"`, // Escape quotes in author
-          new Date(message.timestamp).toISOString(),
-          message.likes
+`"${(message.text || message.content || '').replace(/"/g, '""')}"`, // Escape quotes in text
+          `"${(message.author_name || message.author || '').replace(/"/g, '""')}"`, // Escape quotes in author
+          new Date(message.created_at || message.timestamp).toISOString(),
+          Array.isArray(message.likes) ? message.likes.length : (message.likes ? message.likes.split(',').length : 0)
         ].join(','))
       ].join('\n');
 
@@ -232,7 +232,7 @@ setSelectAll(false);
                 {(() => {
                   const today = new Date();
                   const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                  return messages.filter(msg => new Date(msg.created_at) >= todayStart).length;
+return messages.filter(msg => new Date(msg.created_at || msg.timestamp) >= todayStart).length;
                 })()}
               </p>
             </div>
@@ -245,8 +245,9 @@ setSelectAll(false);
               <p className="text-sm text-gray-400">Top 3 Authors</p>
               <div className="text-sm admin-text">
                 {(() => {
-                  const authorCounts = messages.reduce((acc, msg) => {
-                    acc[msg.author_name] = (acc[msg.author_name] || 0) + 1;
+const authorCounts = messages.reduce((acc, msg) => {
+                    const authorName = msg.author_name || msg.author || 'Unknown';
+                    acc[authorName] = (acc[authorName] || 0) + 1;
                     return acc;
                   }, {});
                   const sortedAuthors = Object.entries(authorCounts)
@@ -268,7 +269,7 @@ setSelectAll(false);
               <p className="text-xl font-bold admin-text">
                 {(() => {
                   if (messages.length === 0) return 0;
-                  const totalChars = messages.reduce((sum, msg) => sum + (msg.text?.length || 0), 0);
+const totalChars = messages.reduce((sum, msg) => sum + ((msg.text || msg.content || '').length || 0), 0);
                   return Math.round(totalChars / messages.length);
                 })()}
                 <span className="text-sm text-gray-400 ml-1">chars</span>
@@ -360,8 +361,8 @@ setSelectAll(false);
                             rows={2}
                           />
                         ) : (
-                          <div className="truncate" title={message.text}>
-                            {message.text}
+<div className="truncate" title={message.text || message.content}>
+                            {message.text || message.content}
                           </div>
                         )}
                       </td>
@@ -373,16 +374,16 @@ setSelectAll(false);
                             className="w-full"
                           />
                         ) : (
-                          <span className="text-gray-300">{message.author_name}</span>
+<span className="text-gray-300">{message.author_name || message.author}</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-gray-400 text-sm">
-                        {formatDate(message.created_at)}
+{formatDate(message.created_at || message.timestamp)}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-1 text-red-400">
                           <ApperIcon name="Heart" size={16} />
-                          <span>{message.likes?.length || 0}</span>
+<span>{Array.isArray(message.likes) ? message.likes.length : (message.likes ? message.likes.split(',').filter(l => l.trim()).length : 0)}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">

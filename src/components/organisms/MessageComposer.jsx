@@ -37,11 +37,15 @@ const handleSubmit = async (e) => {
     try {
       setIsSubmitting(true);
       
-      const newMessage = {
+const newMessage = {
+        Name: content.trim().substring(0, 50) + "...", // Use first 50 chars as Name
         text: content.trim(),
         author_name: authorName.trim(),
         created_at: new Date().toISOString(),
-        likes: []
+        likes: "",
+        author: authorName.trim(),
+        content: content.trim(),
+        timestamp: new Date().toISOString()
       };
 
       await messageService.create(newMessage);
