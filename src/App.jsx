@@ -89,19 +89,22 @@ function AppContent() {
               navigate('/home');
             }
           } else {
-            navigate('/home');
+navigate('/home');
           }
         } else {
           // User is not authenticated
-          if (!isAuthPage) {
+          const isPublicPath = currentPath === '/' || currentPath.includes('/home');
+          
+          if (!isAuthPage && !isPublicPath) {
+            // Only redirect to login for protected routes, not public paths
             navigate(
               currentPath.includes('/signup')
                 ? `/signup?redirect=${currentPath}`
                 : currentPath.includes('/login')
                 ? `/login?redirect=${currentPath}`
-                : '/login'
+                : `/login?redirect=${currentPath}`
             );
-          } else if (redirectPath) {
+          } else if (redirectPath && !isPublicPath) {
             if (
               !['error', 'signup', 'login', 'callback', 'prompt-password', 'reset-password'].some((path) => currentPath.includes(path))
             ) {
@@ -110,10 +113,9 @@ function AppContent() {
               navigate(currentPath);
             }
           } else if (isAuthPage) {
-navigate(currentPath);
-          } else {
-            navigate('/login');
+            navigate(currentPath);
           }
+          // Allow access to public paths without redirect
           dispatch(clearUser());
         }
       },
@@ -191,15 +193,15 @@ navigate(currentPath);
   return (
     <AuthContext.Provider value={authMethods}>
       <div className="min-h-screen bg-background font-pretendard">
-        <Routes>
+<Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/callback" element={<Callback />} />
           <Route path="/error" element={<ErrorPage />} />
           <Route path="/prompt-password/:appId/:emailAddress/:provider" element={<PromptPassword />} />
           <Route path="/reset-password/:appId/:fields" element={<ResetPassword />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-<Route path="/home" element={<Layout><HomePage /></Layout>} />
+          <Route path="/" element={<Layout><HomePage /></Layout>} />
+          <Route path="/home" element={<Layout><HomePage /></Layout>} />
           <Route path="/post" element={<Layout><WritePage /></Layout>} />
           <Route path="/admin" element={<AdminRoute><Layout><AdminPage /></Layout></AdminRoute>} />
         </Routes>
