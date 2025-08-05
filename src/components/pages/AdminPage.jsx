@@ -12,13 +12,21 @@ import { ko } from "date-fns/locale";
 
 const AdminPage = () => {
   const { currentUser } = useUser();
-  const [messages, setMessages] = useState([]);
+const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
   const [deletingMessage, setDeletingMessage] = useState(null);
 
-  // Redirect if not admin
+  // Always call hooks before any conditional logic
+  useEffect(() => {
+    // Only load messages if user is admin
+    if (currentUser?.is_admin) {
+      loadMessages();
+    }
+  }, [currentUser?.is_admin]);
+
+  // Render access denied for non-admin users
   if (!currentUser?.is_admin) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -30,10 +38,6 @@ const AdminPage = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    loadMessages();
-  }, []);
 
   const loadMessages = async () => {
     try {
