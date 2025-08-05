@@ -2,22 +2,23 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import Textarea from "@/components/atoms/Textarea";
 import ApperIcon from "@/components/ApperIcon";
 import { useUser } from "@/components/organisms/Layout";
 import messageService from "@/services/api/messageService";
-import EditMessageModal from "@/components/molecules/EditMessageModal";
 import DeleteConfirmDialog from "@/components/molecules/DeleteConfirmDialog";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 
 const AdminPage = () => {
   const { currentUser } = useUser();
-const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null);
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editData, setEditData] = useState({ text: '', author_name: '' });
   const [deletingMessage, setDeletingMessage] = useState(null);
-
   // Always call hooks before any conditional logic
   useEffect(() => {
     // Only load messages if user is admin
@@ -53,19 +54,29 @@ const [messages, setMessages] = useState([]);
     }
   };
 
-  const handleEdit = (message) => {
-    setEditingMessage(message);
+const handleEdit = (message) => {
+    setEditingRowId(message.Id);
+    setEditData({
+      text: message.text,
+      author_name: message.author_name
+    });
   };
 
-  const handleEditSave = async (messageData) => {
+  const handleSave = async (messageId) => {
     try {
-      await messageService.update(editingMessage.Id, messageData);
+      await messageService.update(messageId, editData);
       await loadMessages();
-      setEditingMessage(null);
-      toast.success("메시지가 수정되었습니다");
+      setEditingRowId(null);
+      setEditData({ text: '', author_name: '' });
+      toast.success("수정 완료");
     } catch (err) {
       toast.error("메시지 수정에 실패했습니다");
     }
+  };
+
+  const handleCancel = () => {
+    setEditingRowId(null);
+    setEditData({ text: '', author_name: '' });
   };
 
   const handleDelete = (message) => {
@@ -191,16 +202,35 @@ const [messages, setMessages] = useState([]);
                     <th className="text-left py-3 px-4 font-medium text-gray-300">작업</th>
                   </tr>
                 </thead>
-                <tbody>
+<tbody>
                   {messages.map((message) => (
                     <tr key={message.Id} className="border-b border-gray-800 hover:bg-surface/30">
                       <td className="py-3 px-4 text-gray-400">#{message.Id}</td>
                       <td className="py-3 px-4 max-w-xs">
-                        <div className="truncate" title={message.text}>
-                          {message.text}
-                        </div>
+                        {editingRowId === message.Id ? (
+                          <Textarea
+                            value={editData.text}
+                            onChange={(e) => setEditData(prev => ({ ...prev, text: e.target.value }))}
+                            className="min-h-[60px] resize-none"
+                            rows={2}
+                          />
+                        ) : (
+                          <div className="truncate" title={message.text}>
+                            {message.text}
+                          </div>
+                        )}
                       </td>
-                      <td className="py-3 px-4 text-gray-300">{message.author_name}</td>
+                      <td className="py-3 px-4">
+                        {editingRowId === message.Id ? (
+                          <Input
+                            value={editData.author_name}
+                            onChange={(e) => setEditData(prev => ({ ...prev, author_name: e.target.value }))}
+                            className="w-full"
+                          />
+                        ) : (
+                          <span className="text-gray-300">{message.author_name}</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-gray-400 text-sm">
                         {formatDate(message.created_at)}
                       </td>
@@ -211,24 +241,45 @@ const [messages, setMessages] = useState([]);
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEdit(message)}
-                            className="hover:text-blue-400"
-                          >
-                            <ApperIcon name="Edit" size={16} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDelete(message)}
-                            className="hover:text-red-400"
-                          >
-                            <ApperIcon name="Trash2" size={16} />
-                          </Button>
-                        </div>
+                        {editingRowId === message.Id ? (
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleSave(message.Id)}
+                              className="hover:text-green-400"
+                            >
+                              <ApperIcon name="Check" size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={handleCancel}
+                              className="hover:text-red-400"
+                            >
+                              <ApperIcon name="X" size={16} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEdit(message)}
+                              className="hover:text-blue-400"
+                            >
+                              <ApperIcon name="Edit" size={16} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(message)}
+                              className="hover:text-red-400"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </Button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -239,14 +290,6 @@ const [messages, setMessages] = useState([]);
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
-      {editingMessage && (
-        <EditMessageModal
-          message={editingMessage}
-          onSave={handleEditSave}
-          onClose={() => setEditingMessage(null)}
-        />
-      )}
 
       {/* Delete Confirmation */}
       {deletingMessage && (
