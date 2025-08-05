@@ -10,13 +10,14 @@ import { useUser } from "@/components/organisms/Layout";
 import Button from "@/components/atoms/Button";
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { currentUser } = useUser();
+const { currentUser } = useUser();
   const { isAuthenticated } = useSelector((state) => state.user);
   const { logout } = useContext(AuthContext);
-const navigationItems = [
+  
+  const navigationItems = [
     { to: "/home", icon: "Home", label: "홈" },
     { to: "/post", icon: "PenTool", label: "글쓰기" },
-    ...(currentUser?.is_admin ? [{ to: "/admin", icon: "Settings", label: "관리자" }] : [])
+    ...(currentUser?.profile?.role === 'admin' ? [{ to: "/admin", icon: "Settings", label: "관리자" }] : [])
   ];
 
   const toggleMobileMenu = () => {

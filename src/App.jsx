@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import { Provider, useDispatch } from 'react-redux';
 import { store } from '@/store/store';
 import { setUser, clearUser } from '@/store/userSlice';
+import profileService from '@/services/api/profileService';
 import Layout from "@/components/organisms/Layout";
 import HomePage from "@/components/pages/HomePage";
 import WritePage from "@/components/pages/WritePage";
@@ -33,11 +34,11 @@ function AppContent() {
     });
     
     // Initialize but don't show login yet
-    ApperUI.setup(client, {
+ApperUI.setup(client, {
       target: '#authentication',
       clientId: import.meta.env.VITE_APPER_PROJECT_ID,
       view: 'both',
-      onSuccess: function (user) {
+      onSuccess: async function (user) {
         setIsInitialized(true);
         // CRITICAL: This exact currentPath logic must be preserved in all implementations
         // DO NOT simplify or modify this pattern as it ensures proper redirection flow
@@ -48,7 +49,36 @@ function AppContent() {
                            currentPath.includes('/prompt-password') || currentPath.includes('/reset-password');
         
         if (user) {
-          // User is authenticated
+          // User is authenticated - handle profile creation
+          try {
+            // Check if profile exists for this user
+            let profile = await profileService.getByUserId(user.userId);
+            
+            // If no profile exists, create one with default member role
+            if (!profile) {
+              console.log('Creating new profile for user:', user.userId);
+              profile = await profileService.create({
+                user: user.userId,
+                role: 'member', // Default role for new users
+                Name: `Profile for ${user.firstName || user.name || 'User'}`
+              });
+              console.log('Profile created successfully:', profile);
+            }
+            
+            // Store user information with profile in Redux
+            const userWithProfile = {
+              ...JSON.parse(JSON.stringify(user)),
+              profile: profile
+            };
+            dispatch(setUser(userWithProfile));
+            
+          } catch (error) {
+            console.error('Error handling user profile:', error);
+            // Still proceed with login even if profile creation fails
+            dispatch(setUser(JSON.parse(JSON.stringify(user))));
+          }
+          
+          // Handle navigation
           if (redirectPath) {
             navigate(redirectPath);
           } else if (!isAuthPage) {
@@ -60,8 +90,6 @@ function AppContent() {
           } else {
             navigate('/home');
           }
-          // Store user information in Redux
-          dispatch(setUser(JSON.parse(JSON.stringify(user))));
         } else {
           // User is not authenticated
           if (!isAuthPage) {

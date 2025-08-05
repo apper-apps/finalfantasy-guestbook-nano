@@ -1,7 +1,9 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import profileService from "@/services/api/profileService";
 import Header from "@/components/organisms/Header";
 
-// User Context for demo purposes
+// User Context for profile data
 const UserContext = createContext();
 
 export const useUser = () => {
@@ -13,12 +15,61 @@ export const useUser = () => {
 };
 
 const Layout = ({ children }) => {
-  // Mock user data for demo - in real app this would come from auth
-  const [currentUser] = useState({
-    Id: 1,
-    name: "관리자",
-    is_admin: true
-  });
+  const { user, isAuthenticated } = useSelector((state) => state.user);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (isAuthenticated && user) {
+        try {
+          // If profile is already in Redux store, use it
+          if (user.profile) {
+            setCurrentUser({
+              ...user,
+              profile: user.profile,
+              // Map profile role to is_admin for compatibility
+              is_admin: user.profile.role === 'admin'
+            });
+          } else if (user.userId) {
+            // Fetch profile if not in store
+            const profile = await profileService.getByUserId(user.userId);
+            setCurrentUser({
+              ...user,
+              profile: profile,
+              is_admin: profile?.role === 'admin'
+            });
+          } else {
+            // Fallback to user data without profile
+            setCurrentUser({
+              ...user,
+              is_admin: false
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+          // Fallback to user data without admin access
+          setCurrentUser({
+            ...user,
+            is_admin: false
+          });
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    };
+
+    loadUserProfile();
+  }, [isAuthenticated, user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <UserContext.Provider value={{ currentUser }}>
