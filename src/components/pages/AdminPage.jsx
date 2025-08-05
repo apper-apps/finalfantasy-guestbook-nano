@@ -126,7 +126,43 @@ const handleDelete = (message) => {
     } else {
       const newSelected = selectedMessages.filter(m => m.Id !== message.Id);
       setSelectedMessages(newSelected);
-      setSelectAll(false);
+setSelectAll(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    try {
+      // CSV headers
+      const headers = ['id', 'text', 'author_name', 'created_at', 'like_count'];
+      
+      // Convert messages to CSV format
+      const csvContent = [
+        headers.join(','),
+        ...messages.map(message => [
+          message.Id,
+          `"${message.text.replace(/"/g, '""')}"`, // Escape quotes in text
+          `"${message.author.replace(/"/g, '""')}"`, // Escape quotes in author
+          new Date(message.timestamp).toISOString(),
+          message.likes
+        ].join(','))
+      ].join('\n');
+
+      // Create and download blob
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `messages_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('CSV 다운로드가 시작되었습니다');
+    } catch (error) {
+      toast.error('CSV 내보내기 중 오류가 발생했습니다');
     }
   };
 
@@ -244,11 +280,21 @@ const handleDelete = (message) => {
 
       {/* Messages Table */}
       <Card>
-        <CardHeader>
-          <h2 className="text-xl font-bold admin-text flex items-center space-x-2">
-            <ApperIcon name="Table" size={24} />
-            <span>메시지 관리</span>
-          </h2>
+<CardHeader>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold admin-text flex items-center space-x-2">
+              <ApperIcon name="Table" size={24} />
+              <span>메시지 관리</span>
+            </h2>
+            <Button
+              onClick={handleExportCSV}
+              variant="outline"
+              className="flex items-center space-x-2 border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white"
+            >
+              <ApperIcon name="Download" size={16} />
+              <span>CSV 내보내기</span>
+            </Button>
+          </div>
         </CardHeader>
 <CardContent>
           {selectedMessages.length > 0 && (
