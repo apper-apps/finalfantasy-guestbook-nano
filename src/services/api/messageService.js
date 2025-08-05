@@ -23,7 +23,7 @@ const messageService = {
     return { ...message };
   },
 
-  async create(messageData) {
+async create(messageData) {
     await new Promise(resolve => setTimeout(resolve, 400));
     
     // Find the highest existing Id and add 1
@@ -33,12 +33,13 @@ const messageService = {
     
     const newMessage = {
       Id: maxId + 1,
-      content: messageData.content,
-      author: messageData.author || "익명",
-      timestamp: messageData.timestamp || new Date().toISOString(),
+      text: messageData.text,
+      author_name: messageData.author_name,
+      created_at: messageData.created_at || new Date().toISOString(),
+      likes: messageData.likes || []
     };
     
-    messages.push(newMessage);
+    messages.unshift(newMessage); // Add to beginning to show newest first
     return { ...newMessage };
   },
 
