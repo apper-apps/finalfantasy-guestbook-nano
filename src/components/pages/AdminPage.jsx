@@ -13,12 +13,14 @@ import { ko } from "date-fns/locale";
 
 const AdminPage = () => {
   const { currentUser } = useUser();
-  const [messages, setMessages] = useState([]);
+const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingRowId, setEditingRowId] = useState(null);
   const [editData, setEditData] = useState({ text: '', author_name: '' });
   const [deletingMessage, setDeletingMessage] = useState(null);
+  const [selectedMessages, setSelectedMessages] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   // Always call hooks before any conditional logic
   useEffect(() => {
     // Only load messages if user is admin
@@ -79,18 +81,52 @@ const handleEdit = (message) => {
     setEditData({ text: '', author_name: '' });
   };
 
-  const handleDelete = (message) => {
+const handleDelete = (message) => {
     setDeletingMessage(message);
   };
 
-const handleDeleteConfirm = async () => {
+  const handleBulkDelete = () => {
+    setDeletingMessage(selectedMessages);
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      await messageService.delete(deletingMessage.Id);
+      if (Array.isArray(deletingMessage)) {
+        // Bulk delete
+        await Promise.all(deletingMessage.map(message => messageService.delete(message.Id)));
+        toast.success(`${deletingMessage.length}개의 메시지가 삭제되었습니다`);
+        setSelectedMessages([]);
+        setSelectAll(false);
+      } else {
+        // Single delete
+        await messageService.delete(deletingMessage.Id);
+        toast.success("삭제되었습니다");
+      }
       await loadMessages();
       setDeletingMessage(null);
-      toast.success("삭제되었습니다");
     } catch (err) {
       toast.error("메시지 삭제에 실패했습니다");
+    }
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedMessages([...messages]);
+    } else {
+      setSelectedMessages([]);
+    }
+  };
+
+  const handleSelectMessage = (message, checked) => {
+    if (checked) {
+      const newSelected = [...selectedMessages, message];
+      setSelectedMessages(newSelected);
+      setSelectAll(newSelected.length === messages.length);
+    } else {
+      const newSelected = selectedMessages.filter(m => m.Id !== message.Id);
+      setSelectedMessages(newSelected);
+      setSelectAll(false);
     }
   };
 
@@ -183,7 +219,23 @@ const handleDeleteConfirm = async () => {
             <span>메시지 관리</span>
           </h2>
         </CardHeader>
-        <CardContent>
+<CardContent>
+          {selectedMessages.length > 0 && (
+            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between">
+              <span className="text-red-400">
+                {selectedMessages.length}개의 메시지가 선택됨
+              </span>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="flex items-center space-x-2"
+              >
+                <ApperIcon name="Trash2" size={16} />
+                <span>선택 삭제</span>
+              </Button>
+            </div>
+          )}
           {messages.length === 0 ? (
             <div className="text-center py-12">
               <ApperIcon name="MessageSquareOff" size={48} className="mx-auto mb-4 text-gray-500" />
@@ -193,7 +245,15 @@ const handleDeleteConfirm = async () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-700">
+<tr className="border-b border-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="w-4 h-4 text-primary bg-surface border-gray-600 rounded focus:ring-primary focus:ring-2"
+                      />
+                    </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-300">ID</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-300">메시지</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-300">작성자</th>
@@ -203,8 +263,16 @@ const handleDeleteConfirm = async () => {
                   </tr>
                 </thead>
 <tbody>
-                  {messages.map((message) => (
+{messages.map((message) => (
                     <tr key={message.Id} className="border-b border-gray-800 hover:bg-surface/30">
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.some(m => m.Id === message.Id)}
+                          onChange={(e) => handleSelectMessage(message, e.target.checked)}
+                          className="w-4 h-4 text-primary bg-surface border-gray-600 rounded focus:ring-primary focus:ring-2"
+                        />
+                      </td>
                       <td className="py-3 px-4 text-gray-400">#{message.Id}</td>
                       <td className="py-3 px-4 max-w-xs">
                         {editingRowId === message.Id ? (
